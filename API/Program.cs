@@ -15,17 +15,20 @@ app.UseExceptionHandler(handler => handler.Run(async context =>
     var ex = context.Features.Get<IExceptionHandlerFeature>()?.Error;
     var badRequest = ex is BadHttpRequestException;
     context.Response.StatusCode = badRequest ? StatusCodes.Status400BadRequest : StatusCodes.Status500InternalServerError;
-    var msg = badRequest ? "Requisição inválida: corpo JSON malformado." : "Erro interno ao processar a ordem.";
+    var msg = badRequest ? "Requisição inválida: JSON malformado ou com campos de tipo incorreto." : "Erro interno ao processar a ordem.";
     await context.Response.WriteAsJsonAsync(new OrdemResponse(false, 0m, msg));
 }));
 
 if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 
-app.UseHttpsRedirection();
-
 app.MapPost("/ordens", (OrdemRequest ordem, OrderAccumulator accumulator) =>
 {
+    // Campo inválido é erro de entrada (400); limite ultrapassado é regra de negócio (422)
+    var erro = OrderAccumulator.Validar(ordem);
+    if (erro is not null)
+        return Results.BadRequest(new OrdemResponse(false, accumulator.ObterExposicao(ordem.Ativo), erro));
+
     var resposta = accumulator.Processar(ordem);
     return resposta.Sucesso ? Results.Ok(resposta) : Results.UnprocessableEntity(resposta);
 });
