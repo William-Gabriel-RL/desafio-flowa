@@ -39,8 +39,8 @@ public class OrderAccumulatorTests
     [Fact]
     public void ExposicaoEhIndependentePorAtivo()
     {
-        _accumulator.Processar(new OrdemRequest("PETR4", "C", 1000, 1000m));
-        var resposta = _accumulator.Processar(new OrdemRequest("VALE3", "C", 1000, 1000m));
+        _accumulator.Processar(new OrdemRequest("PETR4", "C", 10_000, 100m));
+        var resposta = _accumulator.Processar(new OrdemRequest("VALE3", "C", 10_000, 100m));
 
         Assert.True(resposta.Sucesso);
         Assert.Equal(1_000_000m, _accumulator.ObterExposicao("PETR4"));
@@ -90,6 +90,10 @@ public class OrderAccumulatorTests
     [InlineData("PETR4", "C", -5, 1)]
     [InlineData("PETR4", "C", 1, 0)]
     [InlineData("PETR4", "C", 1, -1)]
+    [InlineData("PETR4", "C", 100_000, 1)]
+    [InlineData("PETR4", "C", 1, 1_000)]
+    [InlineData("PETR4", "C", 1, 10.001)]
+    [InlineData("PETR4", "C", 1, 0.005)]
     public void OrdemInvalida_RejeitaENaoRegistra(string? ativo, string lado, int quantidade, decimal preco)
     {
         var resposta = _accumulator.Processar(new OrdemRequest(ativo, lado, quantidade, preco));
@@ -99,10 +103,22 @@ public class OrderAccumulatorTests
         Assert.Equal(0m, _accumulator.ObterExposicao("PETR4"));
     }
 
+    [Theory]
+    [InlineData(99_999, 0.01)]
+    [InlineData(1, 999.99)]
+    [InlineData(1, 0.29)]
+    public void OrdemNosLimitesDosCampos_EhAceita(int quantidade, decimal preco)
+    {
+        var resposta = _accumulator.Processar(new OrdemRequest("PETR4", "C", quantidade, preco));
+
+        Assert.True(resposta.Sucesso);
+        Assert.Equal(quantidade * preco, resposta.ExposicaoAtual);
+    }
+
     [Fact]
     public void OrdensConcorrentes_NaoUltrapassamLimite()
     {
-        Parallel.For(0, 2_000, _ => _accumulator.Processar(new OrdemRequest("PETR4", "C", 1, 1_000m)));
+        Parallel.For(0, 2_000, _ => _accumulator.Processar(new OrdemRequest("PETR4", "C", 10, 100m)));
 
         Assert.Equal(1_000_000m, _accumulator.ObterExposicao("PETR4"));
     }
