@@ -1,0 +1,84 @@
+<main class="pagina">
+  <header>
+    <h1>OrderGenerator</h1>
+    <p class="subtitulo">Envie ordens ao OrderAccumulator e acompanhe a exposição financeira por ativo.</p>
+  </header>
+
+  <form class="cartao" [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+    <div class="campo">
+      <label for="ativo">Ativo</label>
+      <select id="ativo" formControlName="ativo">
+        <option value="" disabled>Selecione</option>
+        @for (ativo of ativos; track ativo) {
+          <option [value]="ativo">{{ ativo }}</option>
+        }
+      </select>
+      @if (erro('ativo', 'required')) {
+        <small class="erro">Escolha um ativo.</small>
+      }
+    </div>
+
+    <fieldset class="campo">
+      <legend>Lado</legend>
+      <div class="lados">
+        <label class="lado compra">
+          <input type="radio" formControlName="lado" value="C" />
+          <span>Compra</span>
+        </label>
+        <label class="lado venda">
+          <input type="radio" formControlName="lado" value="V" />
+          <span>Venda</span>
+        </label>
+      </div>
+      @if (erro('lado', 'required')) {
+        <small class="erro">Escolha compra ou venda.</small>
+      }
+    </fieldset>
+
+    <div class="campo">
+      <label for="quantidade">Quantidade</label>
+      <input id="quantidade" type="number" formControlName="quantidade" min="1" max="99999" step="1" placeholder="Ex.: 584" />
+      @if (erro('quantidade', 'required')) {
+        <small class="erro">Informe a quantidade.</small>
+      } @else if (erro('quantidade', 'inteiro')) {
+        <small class="erro">A quantidade deve ser um número inteiro.</small>
+      } @else if (erro('quantidade', 'maiorQue')) {
+        <small class="erro">A quantidade deve ser positiva.</small>
+      } @else if (erro('quantidade', 'menorQue')) {
+        <small class="erro">A quantidade deve ser menor que 100.000.</small>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="preco">Preço (R$)</label>
+      <input id="preco" type="number" formControlName="preco" min="0.01" max="999.99" step="0.01" placeholder="Ex.: 54.87" />
+      @if (erro('preco', 'required')) {
+        <small class="erro">Informe o preço.</small>
+      } @else if (erro('preco', 'maiorQue')) {
+        <small class="erro">O preço deve ser positivo.</small>
+      } @else if (erro('preco', 'menorQue')) {
+        <small class="erro">O preço deve ser menor que R$ 1.000,00.</small>
+      } @else if (erro('preco', 'multiploDeCentavo')) {
+        <small class="erro">O preço deve ter no máximo duas casas decimais.</small>
+      }
+    </div>
+
+    <button type="submit" [disabled]="enviando()">
+      {{ enviando() ? 'Enviando…' : 'Enviar ordem' }}
+    </button>
+  </form>
+
+  @if (resposta(); as r) {
+    <section class="cartao resultado" [class.sucesso]="r.sucesso" [class.falha]="!r.sucesso" aria-live="polite">
+      <h2>{{ r.sucesso ? 'Sucesso' : 'Erro' }}</h2>
+      <dl>
+        <dt>Exposição atual</dt>
+        <dd>{{ r.exposicao_atual | currency: 'BRL' }}</dd>
+        @if (r.msg_erro) {
+          <dt>Mensagem</dt>
+          <dd>{{ r.msg_erro }}</dd>
+        }
+      </dl>
+    </section>
+  }
+</main>

@@ -1,0 +1,163 @@
+:host {
+  --verde: #1a7f4b;
+  --vermelho: #c0392b;
+  --borda: #d5d9e0;
+  --texto-suave: #5b6472;
+  display: block;
+}
+
+.pagina {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 32px 16px;
+  display: grid;
+  gap: 24px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+.subtitulo {
+  margin: 4px 0 0;
+  color: var(--texto-suave);
+}
+
+.cartao {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.campo {
+  display: grid;
+  gap: 6px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+label,
+legend {
+  font-weight: 600;
+  padding: 0;
+}
+
+select,
+input[type='number'] {
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: #fff;
+
+  &.ng-invalid.ng-touched {
+    border-color: var(--vermelho);
+  }
+}
+
+.lados {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.lado {
+  font-weight: 500;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    opacity: 0;
+  }
+
+  span {
+    display: block;
+    text-align: center;
+    padding: 10px;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+  }
+
+  input:focus-visible + span {
+    outline: 2px solid #3b6fd8;
+    outline-offset: 2px;
+  }
+
+  &.compra input:checked + span {
+    background: var(--verde);
+    border-color: var(--verde);
+    color: #fff;
+  }
+
+  &.venda input:checked + span {
+    background: var(--vermelho);
+    border-color: var(--vermelho);
+    color: #fff;
+  }
+}
+
+.erro {
+  color: var(--vermelho);
+}
+
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #1f2937;
+  color: #fff;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+}
+
+.resultado {
+  border-left-width: 6px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+
+  &.sucesso {
+    border-left-color: var(--verde);
+
+    h2 {
+      color: var(--verde);
+    }
+  }
+
+  &.falha {
+    border-left-color: var(--vermelho);
+
+    h2 {
+      color: var(--vermelho);
+    }
+  }
+
+  dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 16px;
+  }
+
+  dt {
+    color: var(--texto-suave);
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 600;
+  }
+}
