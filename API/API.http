@@ -1,0 +1,34 @@
+@API_HostAddress = http://localhost:5197
+
+### Compra aceita
+POST {{API_HostAddress}}/ordens
+Content-Type: application/json
+
+{
+  "ativo": "PETR4",
+  "lado": "C",
+  "quantidade": 584,
+  "preco": 54.87
+}
+
+### Venda aceita
+POST {{API_HostAddress}}/ordens
+Content-Type: application/json
+
+{
+  "ativo": "PETR4",
+  "lado": "V",
+  "quantidade": 100,
+  "preco": 54.87
+}
+
+### Rejeitada por ultrapassar o limite
+POST {{API_HostAddress}}/ordens
+Content-Type: application/json
+
+{
+  "ativo": "VALE3",
+  "lado": "C",
+  "quantidade": 20000,
+  "preco": 60.00
+}
