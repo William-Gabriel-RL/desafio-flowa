@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
-import { ATIVOS, Ativo, Lado, Ordem, OrdemResposta } from './ordens/ordem.model';
+import { ATIVOS, Ativo, Lado, Ordem, Resultado } from './ordens/ordem.model';
 import { OrdemService } from './ordens/ordem.service';
 import { inteiro, maiorQue, menorQue, multiploDeCentavo } from './ordens/ordem.validators';
 
@@ -18,7 +18,7 @@ export class App {
 
   protected readonly ativos = ATIVOS;
   protected readonly enviando = signal(false);
-  protected readonly resposta = signal<OrdemResposta | null>(null);
+  protected readonly resultado = signal<Resultado | null>(null);
 
   protected readonly form = this.fb.group({
     ativo: this.fb.control<Ativo | ''>('', Validators.required),
@@ -33,11 +33,12 @@ export class App {
       return;
     }
 
+    const ordem = this.form.getRawValue() as Ordem;
     this.enviando.set(true);
     this.ordemService
-      .enviar(this.form.getRawValue() as Ordem)
+      .enviar(ordem)
       .pipe(finalize(() => this.enviando.set(false)))
-      .subscribe(resposta => this.resposta.set(resposta));
+      .subscribe(resposta => this.resultado.set({ ativo: ordem.ativo, resposta }));
   }
 
   protected erro(campo: keyof typeof this.form.controls, tipo: string): boolean {
