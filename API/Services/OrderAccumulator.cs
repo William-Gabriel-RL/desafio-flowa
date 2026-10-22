@@ -5,6 +5,8 @@ namespace API.Services;
 public class OrderAccumulator
 {
     public const decimal LimiteExposicao = 1_000_000m;
+    public const int QuantidadeMaxima = 100_000;
+    public const decimal PrecoMaximo = 1_000m;
 
     public static readonly IReadOnlySet<string> AtivosPermitidos = new HashSet<string> { "PETR4", "VALE3", "VIIA4" };
 
@@ -51,8 +53,14 @@ public class OrderAccumulator
             return "Lado inválido. Valores permitidos: C, V.";
         if (ordem.Quantidade <= 0)
             return "Quantidade deve ser maior que zero.";
+        if (ordem.Quantidade >= QuantidadeMaxima)
+            return $"Quantidade deve ser menor que {QuantidadeMaxima:N0}.";
         if (ordem.Preco <= 0)
             return "Preço deve ser maior que zero.";
+        if (ordem.Preco >= PrecoMaximo)
+            return $"Preço deve ser menor que {PrecoMaximo:N2}.";
+        if (ordem.Preco % 0.01m != 0)
+            return "Preço deve ser múltiplo de 0,01.";
         return null;
     }
 }
