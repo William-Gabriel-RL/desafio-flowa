@@ -1,3 +1,4 @@
+using System.Globalization;
 using API.Models;
 using API.Services;
 
@@ -113,6 +114,24 @@ public class OrderAccumulatorTests
 
         Assert.True(resposta.Sucesso);
         Assert.Equal(quantidade * preco, resposta.ExposicaoAtual);
+    }
+
+    [Fact]
+    public void MensagemDeErro_UsaFormatoBrasileiroIndependenteDaCulturaDoServidor()
+    {
+        var culturaOriginal = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+        try
+        {
+            var resposta = _accumulator.Processar(new OrdemRequest("PETR4", "C", 20_000, 60m));
+
+            Assert.Contains("1.200.000,00", resposta.MsgErro);
+            Assert.Contains("1.000.000,00", resposta.MsgErro);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culturaOriginal;
+        }
     }
 
     [Fact]

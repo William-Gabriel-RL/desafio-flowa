@@ -1,3 +1,4 @@
+using System.Globalization;
 using API.Models;
 
 namespace API.Services;
@@ -9,6 +10,8 @@ public class OrderAccumulator
     public const decimal PrecoMaximo = 1_000m;
 
     public static readonly IReadOnlySet<string> AtivosPermitidos = new HashSet<string> { "PETR4", "VALE3", "VIIA4" };
+
+    private static readonly CultureInfo Cultura = CultureInfo.GetCultureInfo("pt-BR");
 
     private readonly Dictionary<string, decimal> _exposicoes = new();
     private readonly Lock _lock = new();
@@ -28,8 +31,8 @@ public class OrderAccumulator
             var nova = atual + delta;
 
             if (Math.Abs(nova) > LimiteExposicao)
-                return new OrdemResponse(false, atual,
-                    $"Ordem rejeitada: exposição resultante de {nova:N2} ultrapassa o limite de {LimiteExposicao:N2} para {ordem.Ativo}.");
+                return new OrdemResponse(false, atual, string.Create(Cultura,
+                    $"Ordem rejeitada: exposição resultante de {nova:N2} ultrapassa o limite de {LimiteExposicao:N2} para {ordem.Ativo}."));
 
             _exposicoes[ordem.Ativo!] = nova;
             return new OrdemResponse(true, nova, null);
@@ -45,22 +48,22 @@ public class OrderAccumulator
             return _exposicoes.GetValueOrDefault(ativo);
     }
 
-    private static string? Validar(OrdemRequest ordem)
+    public static string? Validar(OrdemRequest ordem)
     {
         if (ordem.Ativo is null || !AtivosPermitidos.Contains(ordem.Ativo))
-            return $"Ativo inválido.";
+            return "Ativo inválido.";
         if (ordem.Lado is not ("C" or "V"))
             return "Lado inválido. Valores permitidos: C, V.";
         if (ordem.Quantidade <= 0)
             return "Quantidade deve ser maior que zero.";
         if (ordem.Quantidade >= QuantidadeMaxima)
-            return $"Quantidade deve ser menor que {QuantidadeMaxima:N0}.";
+            return string.Create(Cultura, $"Quantidade deve ser menor que {QuantidadeMaxima:N0}.");
         if (ordem.Preco <= 0)
             return "Preço deve ser maior que zero.";
         if (ordem.Preco >= PrecoMaximo)
-            return $"Preço deve ser menor que {PrecoMaximo:N2}.";
+            return string.Create(Cultura, $"Preço deve ser menor que {PrecoMaximo:N2}.");
         if (ordem.Preco % 0.01m != 0)
-            return "Preço deve ser múltiplo de 0,01.";
+            return "Preço deve ser múltiplo de 0,01 e maior que 0";
         return null;
     }
 }

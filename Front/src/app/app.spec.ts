@@ -84,6 +84,19 @@ describe('App', () => {
     const resultado = el.querySelector('.resultado')!;
     expect(resultado.querySelector('h2')!.textContent).toContain('Sucesso');
     expect(resultado.textContent).toContain('32.044,08');
+    expect(resultado.textContent).toContain('Exposição atual em PETR4');
+  });
+
+  it('mantém o ativo enviado no resultado mesmo se o formulário mudar depois', async () => {
+    const { fixture, form, el } = criar();
+    form.setValue({ ativo: 'VALE3', lado: 'C', quantidade: 1, preco: 10 });
+    submeter(el);
+    httpMock.expectOne('/ordens').flush({ sucesso: true, exposicao_atual: 10, msg_erro: null });
+
+    form.controls.ativo.setValue('PETR4');
+    await fixture.whenStable();
+
+    expect(el.querySelector('.resultado')!.textContent).toContain('Exposição atual em VALE3');
   });
 
   it('exibe o erro retornado pela API em uma rejeição', async () => {
@@ -110,6 +123,8 @@ describe('App', () => {
     httpMock.expectOne('/ordens').error(new ProgressEvent('error'));
     await fixture.whenStable();
 
-    expect(el.querySelector('.resultado')!.textContent).toContain('Não foi possível comunicar');
+    const resultado = el.querySelector('.resultado')!;
+    expect(resultado.textContent).toContain('Não foi possível comunicar');
+    expect(resultado.textContent).not.toContain('Exposição atual');
   });
 });

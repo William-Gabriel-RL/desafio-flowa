@@ -9,12 +9,11 @@ export class OrdemService {
 
   enviar(ordem: Ordem): Observable<OrdemResposta> {
     return this.http.post<OrdemResposta>('/ordens', ordem).pipe(
-      // Rejeições (422/400) vêm com o mesmo corpo da resposta de sucesso
       catchError((erro: HttpErrorResponse) =>
         of(
           isOrdemResposta(erro.error)
             ? erro.error
-            : { sucesso: false, exposicao_atual: 0, msg_erro: 'Não foi possível comunicar com o OrderAccumulator.' },
+            : { sucesso: false, exposicao_atual: null, msg_erro: 'Não foi possível comunicar com o OrderAccumulator.' },
         ),
       ),
     );

@@ -37,6 +37,33 @@ public class OrdensEndpointTests
     }
 
     [Fact]
+    public async Task CampoInvalido_Retorna400ComExposicaoAtual()
+    {
+        await _client.PostAsJsonAsync("/ordens", new { ativo = "PETR4", lado = "C", quantidade = 10, preco = 5.0 });
+        var response = await _client.PostAsJsonAsync("/ordens",
+            new { ativo = "PETR4", lado = "C", quantidade = 100_000, preco = 5.0 });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.False(json.RootElement.GetProperty("sucesso").GetBoolean());
+        Assert.Equal(50m, json.RootElement.GetProperty("exposicao_atual").GetDecimal());
+        Assert.Contains("Quantidade", json.RootElement.GetProperty("msg_erro").GetString());
+    }
+
+    [Theory]
+    [InlineData("{ \"ativo\": \"PETR4\", \"lado\": \"C\", \"quantidade\": \"muitas\",\"preco\": 54.87 }")]
+    [InlineData("{ \"ativo\": \"PETR4\", \"lado\": \"C\", \"quantidade\": 584.5, \"preco\": 54.87 }")]
+    public async Task CampoComTipoIncorreto_Retorna400ComMensagemDeTipo(string corpo)
+    {
+        var response = await _client.PostAsync("/ordens", new StringContent(corpo, Encoding.UTF8, "application/json"));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.False(json.RootElement.GetProperty("sucesso").GetBoolean());
+        Assert.Contains("tipo incorreto", json.RootElement.GetProperty("msg_erro").GetString());
+    }
+
+    [Fact]
     public async Task JsonMalformado_Retorna400NoFormatoPadrao()
     {
         var response = await _client.PostAsync("/ordens",

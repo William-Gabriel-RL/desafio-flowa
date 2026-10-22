@@ -11,7 +11,12 @@ export interface Ordem {
 }
 
 export interface OrdemResposta {
-  sucesso: boolean;
-  exposicao_atual: number;
+  sucesso: boolean;  
+  exposicao_atual: number | null;
   msg_erro: string | null;
+}
+
+export interface Resultado {
+  ativo: Ativo;
+  resposta: OrdemResposta;
 }

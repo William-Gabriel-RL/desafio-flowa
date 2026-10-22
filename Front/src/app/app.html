@@ -68,12 +68,15 @@
     </button>
   </form>
 
-  @if (resposta(); as r) {
+  @if (resultado(); as res) {
+    @let r = res.resposta;
     <section class="cartao resultado" [class.sucesso]="r.sucesso" [class.falha]="!r.sucesso" aria-live="polite">
       <h2>{{ r.sucesso ? 'Sucesso' : 'Erro' }}</h2>
       <dl>
-        <dt>Exposição atual</dt>
-        <dd>{{ r.exposicao_atual | currency: 'BRL' }}</dd>
+        @if (r.exposicao_atual !== null) {
+          <dt>Exposição atual em {{ res.ativo }}</dt>
+          <dd>{{ r.exposicao_atual | currency: 'BRL' }}</dd>
+        }
         @if (r.msg_erro) {
           <dt>Mensagem</dt>
           <dd>{{ r.msg_erro }}</dd>
